@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Document</title>
+</head>
+
+<body>
+    {% if name %}
+    <h1>Hello World, {{ name }}</h1>
+    {% else %}
+    <h1>Hello World </h1>
+    {% endif %}
+    <ul>
+        {% for product in products %}
+        <li>{{ product.title }}</li>
+        {% endfor %}
+    </ul>
+</body>
+
+</html>
