@@ -8,8 +8,42 @@ from django.core.mail import send_mail, EmailMessage, mail_admins, BadHeaderErro
 from templated_mail.mail import BaseEmailMessage
 import logging
 import requests
+from .tasks import notify_customers
+from django.core.cache import cache
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from rest_framework.views import APIView
 
 logger = logging.getLogger(__name__)
+
+def test_cache(request):
+    key = 'httpbin_result'
+    if cache.get(key) is None:
+        response = requests.get('https://httpbin.org./delay/2')
+        data = response.json()
+        cache.set(key, data)
+        # cache.set(key, data, 10 * 60) SETTING CACHE TIMEOUT
+    return render(request,'hello.html', {'name': cache.get(key)})
+
+#no need to define key
+#need to wait until cache expire to see changes
+# @cache_page(5 * 60)
+# def test_cache2(request):
+#     response = request.get('https://httpbin.org./delay/2')
+#     data = response.json()
+#     return render(request,'hello.html', {'name': cache.get(data)})
+
+class HelloView(APIView):
+    @method_decorator(cache_page(5 * 60))
+    def get(self, request):
+        response = requests.get('https://httpbin.org./delay/2')
+        data = response.json()
+        return render(request,'hello.html', {'name': data })
+        # return render(request,'hello.html', {'name': cache.get(data)})
+
+def test_background(request):
+    notify_customers.delay('Hello')
+    return render(request,'hello.html', {'name': 'Saroj'})
 
 def test_logging(request):
     try:
@@ -48,6 +82,10 @@ def say_hello(request):
         full_name=Func(F('first_name'), Value(' '), F('last_name'), function='CONCAT')
     )
     return render(request, 'hello.html',{'name' : 'Saroj Shrestha', 'products': list(query_set)});
+
+#RUN command: docker run --rm -it -p 3000:80 -p 2525:25 rnwood/smtp4dev
+#Dashboard in 
+#localhost:3000
 
 def test_mail(request):
     #Method 1
