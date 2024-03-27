@@ -8,14 +8,15 @@ SECRET_KEY = 'django-insecure-kpay)tw#722ok4#gb#p!#inq#=@)&%x#q=impv!ty9(@$qz=7^
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.mysql', #django.db.backends.mysql
         'OPTIONS': {
             'sql_mode': 'traditional',
         },
         'NAME': 'storefront3',
-        'HOST' : 'localhost',
+        'HOST' : 'mysql',
+        'default-character-set': 'utf8',
         'USER' : 'root',
-        'PASSWORD' :'root'
+        'PASSWORD': 'MyPassword'
     }
 }
 
@@ -25,7 +26,8 @@ DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
 }
 
-CELERY_BROKER_URL = 'redis://localhost:6379/1'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_BACKEND_URL = 'redis://redis:6379/1'
 
 #to run celery beat; 
 #celery must start: celery -A storefront worker --loglevel=info --pool=solo
@@ -33,7 +35,7 @@ CELERY_BROKER_URL = 'redis://localhost:6379/1'
 CELERY_BEAT_SCHEDULE = {
     'notify_customers' : {
         'task' : 'playground.tasks.notify_customers',
-        'schedule' : 5, 
+        'schedule' : 60,  #seconds
         # 'schedule' : crontab(minute='*/15') run every 15mintue using crontab
         # 'schedule' : crontab(day_of_week=1, hour=7, minute=30),
         'args' : ['Hello World'],
@@ -53,3 +55,8 @@ CELERY_BEAT_SCHEDULE = {
 #caching
 #pipenv install django-redis
 
+
+#Hack to enable pythong debug toolbar for docker
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALL' : lambda request: True
+}
